@@ -7,7 +7,10 @@ import {
   useUpdateSet,
   useDeleteSet,
   useCompleteWorkout,
+  useUpdateProgramExercise,
+  useExercises,
 } from '../api/hooks';
+import { api } from '../api/client';
 import Card from '../components/Card';
 import toast from 'react-hot-toast';
 
@@ -248,6 +251,161 @@ function SetRow({
   );
 }
 
+// ─── Exercise Menu (three-dot dropdown) ──────────────────
+
+function ExerciseMenu({ onSwap, onRemove }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('touchstart', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('touchstart', handleClick);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen((prev) => !prev)}
+        className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-400
+                   hover:bg-dark-700 rounded-lg transition-colors shrink-0"
+        aria-label="Exercise options"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="12" cy="19" r="2" />
+        </svg>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute right-0 top-full mt-1 bg-dark-700 border border-dark-500
+                       rounded-xl p-1 min-w-[180px] shadow-xl shadow-black/40 z-50"
+          >
+            <button
+              onClick={() => { setOpen(false); onSwap(); }}
+              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-medium text-gray-300
+                         hover:bg-dark-600 rounded-lg text-left transition-colors"
+            >
+              <svg className="w-[18px] h-[18px] opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              Swap Exercise
+            </button>
+            <button
+              onClick={() => { setOpen(false); onRemove(); }}
+              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-medium text-red-400
+                         hover:bg-dark-600 rounded-lg text-left transition-colors"
+            >
+              <svg className="w-[18px] h-[18px] opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Remove Exercise
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Exercise Swap Modal ─────────────────────────────────
+
+function ExerciseSwapModal({ currentExercise, onSelect, onClose }) {
+  const [search, setSearch] = useState('');
+  const { data: exercises, isLoading } = useExercises(search, '');
+  const exerciseList = Array.isArray(exercises) ? exercises : exercises?.exercises || [];
+
+  const filtered = exerciseList.filter((e) => e.id !== currentExercise?.id);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 100, opacity: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="bg-dark-800 border border-dark-600/50 rounded-t-2xl sm:rounded-2xl w-full max-w-md
+                   max-h-[70vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-dark-600/50">
+          <h3 className="text-base font-bold text-gray-100">Swap Exercise</h3>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-300 rounded-lg"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="px-4 py-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search exercises..."
+            autoFocus
+            className="w-full bg-dark-700 border border-dark-500 rounded-lg px-3 py-2.5 text-sm text-gray-100
+                       placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1">
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-8">No exercises found</p>
+          ) : (
+            filtered.map((ex) => {
+              const mgColor = MUSCLE_GROUP_COLORS[ex.muscle_group] || 'bg-gray-400/15 text-gray-400 border-gray-400/20';
+              return (
+                <button
+                  key={ex.id}
+                  onClick={() => onSelect(ex)}
+                  className="w-full flex items-center justify-between px-3 py-3 rounded-lg
+                             hover:bg-dark-700 active:bg-dark-600 transition-colors text-left"
+                >
+                  <span className="text-sm font-medium text-gray-200">{ex.name}</span>
+                  {ex.muscle_group && (
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${mgColor} shrink-0 ml-2`}>
+                      {ex.muscle_group}
+                    </span>
+                  )}
+                </button>
+              );
+            })
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ─── Exercise Card ─────────────────────────────────────────
 
 function ExerciseCard({
@@ -257,6 +415,8 @@ function ExerciseCard({
   createSetMutation,
   onSetCompleted,
   onStartRest,
+  onSwapExercise,
+  onRemoveExercise,
   refetch,
 }) {
   const exercise = programExercise.exercise || programExercise;
@@ -398,7 +558,10 @@ function ExerciseCard({
             </span>
           )}
         </div>
-        <span className="text-xs text-gray-500 font-mono shrink-0 ml-2">{restSeconds}s rest</span>
+        <ExerciseMenu
+          onSwap={() => onSwapExercise(programExercise)}
+          onRemove={() => onRemoveExercise(programExercise)}
+        />
       </div>
 
       {/* Manual rest timer trigger */}
@@ -652,8 +815,11 @@ export default function WorkoutLogger() {
   const [showSummary, setShowSummary] = useState(false);
   const [restTimer, setRestTimer] = useState(null); // { exerciseName, seconds }
   const [notesExpanded, setNotesExpanded] = useState(false);
+  const [swapTarget, setSwapTarget] = useState(null);
 
   const session = data?.workout_session || data;
+  const programId_num = session?.workout_program?.id;
+  const updateProgramExercise = useUpdateProgramExercise(programId_num);
   const exercises = session?.program_exercises || session?.exercises || [];
   const allSets = session?.workout_sets || session?.sets || [];
 
@@ -700,6 +866,45 @@ export default function WorkoutLogger() {
     navigate('/');
     toast.success('Workout saved');
   };
+
+  const handleSwapExercise = useCallback((programExercise) => {
+    setSwapTarget(programExercise);
+  }, []);
+
+  const handleSwapSelect = useCallback(async (newExercise) => {
+    if (!swapTarget) return;
+    try {
+      if (programId_num && swapTarget.id) {
+        await updateProgramExercise.mutateAsync({
+          programExerciseId: swapTarget.id,
+          exercise_id: newExercise.id,
+        });
+      }
+      await refetch();
+      toast.success(`Swapped to ${newExercise.name}`);
+    } catch (err) {
+      toast.error(err.message || 'Failed to swap exercise');
+    }
+    setSwapTarget(null);
+  }, [swapTarget, programId_num, updateProgramExercise, refetch]);
+
+  const handleRemoveExercise = useCallback((programExercise) => {
+    const exercise = programExercise.exercise || programExercise;
+    if (!window.confirm(`Remove ${exercise?.name} from this workout?`)) return;
+
+    const exerciseId = programExercise.exercise_id || exercise?.id;
+    const setsToDelete = allSets.filter((s) => s.exercise_id === exerciseId);
+    Promise.all(
+      setsToDelete.map((s) =>
+        api.delete(`/workout_sessions/${programId}/session_sets/${s.id}`)
+      )
+    ).then(() => {
+      refetch();
+      toast.success(`Removed ${exercise?.name}`);
+    }).catch(() => {
+      toast.error('Failed to remove exercise');
+    });
+  }, [allSets, programId, refetch]);
 
   // ─── Loading state ───────────────────────────────────────
 
@@ -815,6 +1020,18 @@ export default function WorkoutLogger() {
         )}
       </AnimatePresence>
 
+      {/* Swap modal */}
+      <AnimatePresence>
+        {swapTarget && (
+          <ExerciseSwapModal
+            key="swap-modal"
+            currentExercise={swapTarget.exercise || swapTarget}
+            onSelect={handleSwapSelect}
+            onClose={() => setSwapTarget(null)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Exercise cards — stacked vertically */}
       <div className="space-y-4 mt-4 -mx-4 px-4">
         {exercises.map((pe, idx) => (
@@ -826,6 +1043,8 @@ export default function WorkoutLogger() {
             createSetMutation={createSet}
             onSetCompleted={handleSetCompleted}
             onStartRest={handleSetCompleted}
+            onSwapExercise={handleSwapExercise}
+            onRemoveExercise={handleRemoveExercise}
             refetch={refetch}
           />
         ))}
