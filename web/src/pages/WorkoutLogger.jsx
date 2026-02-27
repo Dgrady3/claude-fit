@@ -256,6 +256,7 @@ function ExerciseCard({
   sessionId,
   createSetMutation,
   onSetCompleted,
+  onStartRest,
   refetch,
 }) {
   const exercise = programExercise.exercise || programExercise;
@@ -399,6 +400,28 @@ function ExerciseCard({
         </div>
         <span className="text-xs text-gray-500 font-mono shrink-0 ml-2">{restSeconds}s rest</span>
       </div>
+
+      {/* Manual rest timer trigger */}
+      <button
+        onClick={() => onStartRest(exercise?.name, restSeconds)}
+        className="w-full flex items-center justify-between px-3 py-2 mb-1
+                   bg-cyan-500/[0.04] border border-cyan-500/10 rounded-[10px]
+                   active:bg-cyan-500/[0.08] active:border-cyan-500/20 transition-colors"
+      >
+        <div className="flex items-center gap-2 text-cyan-400 text-[13px] font-medium">
+          <svg className="w-5 h-5 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Rest between each set
+        </div>
+        <span className="flex items-center gap-1.5 font-mono text-[13px] font-semibold text-cyan-400
+                          bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/15">
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+          </svg>
+          {restSeconds}s
+        </span>
+      </button>
 
       {/* Set table */}
       <div>
@@ -802,6 +825,7 @@ export default function WorkoutLogger() {
             sessionId={programId}
             createSetMutation={createSet}
             onSetCompleted={handleSetCompleted}
+            onStartRest={handleSetCompleted}
             refetch={refetch}
           />
         ))}
