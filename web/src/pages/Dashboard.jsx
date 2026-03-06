@@ -11,6 +11,7 @@ import {
 } from '../api/hooks';
 import Card from '../components/Card';
 import ReadinessBanner from '../components/ReadinessBanner';
+import InsightCard from '../components/InsightCard';
 
 // ─── Animation Variants ─────────────────────────────────────
 const container = {
@@ -122,6 +123,11 @@ export default function Dashboard() {
       {/* ─── Readiness Banner ─────────────────────────────────── */}
       <motion.div variants={item}>
         <ReadinessBanner />
+      </motion.div>
+
+      {/* ─── Root Cause Insight ─────────────────────────────────── */}
+      <motion.div variants={item}>
+        <InsightCard />
       </motion.div>
 
       {/* ─── Section 2: Today's Plan ───────────────────────────── */}
