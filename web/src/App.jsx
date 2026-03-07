@@ -18,6 +18,7 @@ import ReportDetail from './pages/ReportDetail';
 import Settings from './pages/Settings';
 import Metrics from './pages/Metrics';
 import DemoEntry from './pages/DemoEntry';
+import Landing from './pages/Landing';
 import AthleteCard from './pages/AthleteCard';
 
 const queryClient = new QueryClient({
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/demo" element={<DemoEntry />} />
+            <Route path="/landing" element={<Landing />} />
 
             {/* Protected routes inside Layout */}
             <Route
