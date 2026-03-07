@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -5,21 +6,25 @@ import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+
+// Eager-load the landing/auth pages (first paint)
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import Programs from './pages/Programs';
-import ProgramDetail from './pages/ProgramDetail';
-import WorkoutLogger from './pages/WorkoutLogger';
-import WorkoutHistory from './pages/WorkoutHistory';
-import Nutrition from './pages/Nutrition';
-import Reports from './pages/Reports';
-import ReportDetail from './pages/ReportDetail';
-import Settings from './pages/Settings';
-import Metrics from './pages/Metrics';
-import DemoEntry from './pages/DemoEntry';
 import Landing from './pages/Landing';
-import AthleteCard from './pages/AthleteCard';
+import DemoEntry from './pages/DemoEntry';
+import Dashboard from './pages/Dashboard';
+
+// Lazy-load everything else
+const Programs = lazy(() => import('./pages/Programs'));
+const ProgramDetail = lazy(() => import('./pages/ProgramDetail'));
+const WorkoutLogger = lazy(() => import('./pages/WorkoutLogger'));
+const WorkoutHistory = lazy(() => import('./pages/WorkoutHistory'));
+const Nutrition = lazy(() => import('./pages/Nutrition'));
+const Reports = lazy(() => import('./pages/Reports'));
+const ReportDetail = lazy(() => import('./pages/ReportDetail'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Metrics = lazy(() => import('./pages/Metrics'));
+const AthleteCard = lazy(() => import('./pages/AthleteCard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,12 +36,21 @@ const queryClient = new QueryClient({
   },
 });
 
+function PageSpinner() {
+  return (
+    <div className="flex justify-center py-20">
+      <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full" />
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ErrorBoundary>
         <BrowserRouter>
+          <Suspense fallback={<PageSpinner />}>
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
@@ -65,6 +79,7 @@ export default function App() {
               <Route path="/athlete-card" element={<AthleteCard />} />
             </Route>
           </Routes>
+          </Suspense>
         </BrowserRouter>
         </ErrorBoundary>
 
