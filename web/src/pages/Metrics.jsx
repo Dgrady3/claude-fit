@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMetrics } from '../api/hooks';
 import Card from '../components/Card';
+import QueryError from '../components/QueryError';
 import LiftProgressionChart from '../components/charts/LiftProgressionChart';
 import VolumeTrendChart from '../components/charts/VolumeTrendChart';
 import WorkoutFrequencyDots from '../components/charts/WorkoutFrequencyDots';
@@ -40,7 +41,7 @@ function ChartCard({ title, children }) {
 
 export default function Metrics() {
   const [range, setRange] = useState('30d');
-  const { data, isLoading } = useMetrics(range);
+  const { data, isLoading, error, refetch } = useMetrics(range);
 
   if (isLoading) {
     return (
@@ -48,6 +49,10 @@ export default function Metrics() {
         <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full" />
       </div>
     );
+  }
+
+  if (error) {
+    return <QueryError error={error} onRetry={refetch} message="Failed to load metrics" />;
   }
 
   return (
