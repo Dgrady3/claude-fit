@@ -9,10 +9,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icon.svg'],
+      includeAssets: ['favicon.svg', 'icon.svg'],
       manifest: {
-        name: 'GrokFit',
-        short_name: 'GrokFit',
+        name: 'Claude-Fit',
+        short_name: 'Claude-Fit',
         description: 'AI-powered fitness tracking',
         theme_color: '#0a0a0f',
         background_color: '#0a0a0f',

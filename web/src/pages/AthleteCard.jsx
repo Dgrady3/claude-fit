@@ -32,7 +32,7 @@ export default function AthleteCard() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-            <span className="text-cyan-400 font-bold text-xl">GF</span>
+            <span className="text-cyan-400 font-bold text-xl">CF</span>
           </div>
           <div>
             <h1 className="text-lg font-bold text-gray-100">{data?.name}</h1>
@@ -80,7 +80,7 @@ export default function AthleteCard() {
 
         {/* Branding */}
         <div className="text-center pt-2 border-t border-dark-600/40">
-          <span className="text-[10px] text-gray-600">Powered by GrokFit</span>
+          <span className="text-[10px] text-gray-600">Powered by Claude-Fit</span>
         </div>
       </motion.div>
 

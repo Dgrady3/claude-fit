@@ -226,6 +226,30 @@ export function useGenerateReport() {
   });
 }
 
+// ─── Health Contexts ────────────────────────────────────────
+export function useHealthContexts() {
+  return useQuery({
+    queryKey: ['healthContexts'],
+    queryFn: () => api.get('/health_contexts'),
+  });
+}
+
+export function useImportHealthContext() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (formData) => api.upload('/health_contexts/import', formData),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['healthContexts'] }),
+  });
+}
+
+export function useDeleteHealthContext() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.delete(`/health_contexts/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['healthContexts'] }),
+  });
+}
+
 // ─── Metrics ────────────────────────────────────────────────
 export function useMetrics(range = '30d') {
   return useQuery({

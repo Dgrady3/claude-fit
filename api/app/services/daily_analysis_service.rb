@@ -69,7 +69,7 @@ class DailyAnalysisService
 
   def system_prompt(user, date)
     <<~PROMPT
-      You are GrokFit, an expert health and fitness analyst. You provide daily health intelligence reports.
+      You are Claude-Fit, an expert health and fitness analyst. You provide daily health intelligence reports.
 
       User Profile:
       - Name: #{user.name || "User"}
@@ -84,6 +84,7 @@ class DailyAnalysisService
       - Be specific and actionable in recommendations
       - Reference the user's goals when making recommendations
       #{exercise_knowledge_context(user, date)}
+      #{health_context(user)}
       IMPORTANT: Respond ONLY with valid JSON in this exact format:
       {
         "analysis": "Your detailed analysis text here",
@@ -129,6 +130,23 @@ class DailyAnalysisService
         context += "\n"
       end
     end
+    context
+  end
+
+  def health_context(user)
+    contexts = user.health_contexts.recent.limit(10)
+    return "" if contexts.empty?
+
+    context = "\nUser Health Context (from imported conversations):\n"
+    contexts.group_by(&:category).each do |category, items|
+      context += "\n#{category.titleize}:\n"
+      items.each do |item|
+        # Trim to avoid prompt bloat — keep first 500 chars per item
+        snippet = item.content.length > 500 ? item.content[0..497] + "..." : item.content
+        context += "- #{snippet}\n"
+      end
+    end
+    context += "\nUse this context to personalize recommendations. Reference relevant history when applicable.\n"
     context
   end
 

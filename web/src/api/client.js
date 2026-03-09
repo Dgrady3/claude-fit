@@ -3,15 +3,15 @@ import toast from 'react-hot-toast';
 const API_BASE = '/api/v1';
 
 function getToken() {
-  return localStorage.getItem('grokfit_token');
+  return localStorage.getItem('claude_fit_token');
 }
 
 function setToken(token) {
-  localStorage.setItem('grokfit_token', token);
+  localStorage.setItem('claude_fit_token', token);
 }
 
 function removeToken() {
-  localStorage.removeItem('grokfit_token');
+  localStorage.removeItem('claude_fit_token');
 }
 
 // Unwrap JSONAPI { data: { id, type, attributes } } into plain objects

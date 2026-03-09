@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :daily_reports, dependent: :destroy
   has_many :oauth_tokens, dependent: :destroy
   has_many :anomalies, dependent: :destroy
+  has_many :health_contexts, dependent: :destroy
 
   def jwt_payload
     super

@@ -89,7 +89,7 @@ puts "Created #{Exercise.count} exercises"
 
 # Demo user
 puts "Creating demo user..."
-demo = User.find_or_create_by!(email: "demo@grokfit.dev") do |u|
+demo = User.find_or_create_by!(email: "demo@claude-fit.dev") do |u|
   u.password = "password123"
   u.name = "Demo User"
   u.body_weight_lbs = 185.0
@@ -540,4 +540,4 @@ puts "  Oura Sleep: #{OuraSleepDatum.count}"
 puts "  Oura Readiness: #{OuraReadinessDatum.count}"
 puts "  Oura Activity: #{OuraActivityDatum.count}"
 puts "  Anomalies: #{Anomaly.count}"
-puts "  Demo user: demo@grokfit.dev / password123"
+puts "  Demo user: demo@claude-fit.dev / password123"

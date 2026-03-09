@@ -1,12 +1,120 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useUpdateUser } from '../api/hooks';
+import { useUpdateUser, useHealthContexts, useImportHealthContext, useDeleteHealthContext } from '../api/hooks';
 import { api } from '../api/client';
 import Card from '../components/Card';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import toast from 'react-hot-toast';
+
+function ChatGPTImportSection({ demoMode }) {
+  const fileRef = useRef(null);
+  const importMutation = useImportHealthContext();
+  const deleteMutation = useDeleteHealthContext();
+  const { data: contextsData } = useHealthContexts();
+  const contexts = Array.isArray(contextsData) ? contextsData : contextsData?.data || [];
+
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      toast.error('Please upload a ChatGPT export JSON file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const result = await importMutation.mutateAsync(formData);
+      toast.success(`Imported ${result.imported_count} health context${result.imported_count !== 1 ? 's' : ''}`);
+    } catch (err) {
+      toast.error(err.message || 'Import failed');
+    }
+
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteMutation.mutateAsync(id);
+      toast.success('Health context removed');
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const categoryLabels = {
+    medical_history: 'Medical History',
+    injuries: 'Injuries',
+    supplements: 'Supplements',
+    allergies: 'Allergies',
+    lifestyle: 'Lifestyle',
+    goals: 'Goals',
+    preferences: 'Preferences',
+    conditions: 'Conditions',
+    medications: 'Medications',
+    general_health: 'General Health',
+  };
+
+  return (
+    <Card className="space-y-4">
+      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Health Context</h2>
+      <p className="text-xs text-gray-500">
+        Import your ChatGPT conversation history to give Claude-Fit context about your health background, injuries, supplements, and goals.
+      </p>
+
+      {!demoMode && (
+        <div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            className="hidden"
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={importMutation.isPending}
+            onClick={() => fileRef.current?.click()}
+          >
+            Import ChatGPT Export
+          </Button>
+          <p className="text-[11px] text-gray-600 mt-1.5">
+            Go to ChatGPT Settings → Data Controls → Export Data. Upload the conversations.json file.
+          </p>
+        </div>
+      )}
+
+      {contexts.length > 0 && (
+        <div className="space-y-2 pt-2 border-t border-dark-600/50">
+          <p className="text-xs text-gray-500 font-medium">Imported contexts:</p>
+          {contexts.map((ctx) => (
+            <div key={ctx.id} className="flex items-center justify-between bg-dark-700/50 rounded-lg px-3 py-2">
+              <div className="min-w-0">
+                <p className="text-sm text-gray-300">{categoryLabels[ctx.category] || ctx.category}</p>
+                <p className="text-xs text-gray-600 truncate">{ctx.content?.slice(0, 80)}...</p>
+              </div>
+              {!demoMode && (
+                <button
+                  onClick={() => handleDelete(ctx.id)}
+                  className="text-gray-600 hover:text-red-400 transition-colors ml-2 shrink-0"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export default function Settings() {
   const { user, updateUser, logout, demoMode } = useAuth();
@@ -85,6 +193,8 @@ export default function Settings() {
       setSyncing(false);
     }
   };
+
+  const fileInputRef = useRef(null);
 
   return (
     <div className="space-y-6 max-w-lg">
@@ -221,6 +331,9 @@ export default function Settings() {
           )}
         </div>
       </Card>
+
+      {/* ChatGPT Health Context Import */}
+      <ChatGPTImportSection demoMode={demoMode} />
 
       {/* Save */}
       {!demoMode && (

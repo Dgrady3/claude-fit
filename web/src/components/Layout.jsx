@@ -267,7 +267,7 @@ export default function Layout() {
       <aside className="hidden lg:flex flex-col items-center w-16 bg-dark-800 border-r border-dark-600/40 fixed inset-y-0 left-0 z-30 py-4">
         {/* Brand */}
         <div className="w-9 h-9 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-6">
-          <span className="text-cyan-400 font-bold text-xs">GF</span>
+          <span className="text-cyan-400 font-bold text-xs">CF</span>
         </div>
 
         {/* Primary nav icons */}
@@ -345,7 +345,7 @@ export default function Layout() {
 
           {/* Center: Brand */}
           <span className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-gray-100">
-            GrokFit
+            Claude-Fit
           </span>
 
           {/* Right: Bell icon */}

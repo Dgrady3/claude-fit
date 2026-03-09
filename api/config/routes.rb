@@ -48,6 +48,12 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :health_contexts, only: [:index, :destroy] do
+        collection do
+          post :import
+        end
+      end
+
       get "readiness/today", to: "readiness#today"
       get "insights/root_cause", to: "insights#root_cause"
       get "metrics", to: "metrics#index"

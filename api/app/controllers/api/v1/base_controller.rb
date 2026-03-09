@@ -13,7 +13,7 @@ module Api
           @demo_mode = false
         else
           # No auth header = demo mode, load demo user
-          @current_user = User.find_by(email: "demo@grokfit.dev")
+          @current_user = User.find_by(email: "demo@claude-fit.dev")
           @demo_mode = true
           head :unauthorized unless @current_user
         end

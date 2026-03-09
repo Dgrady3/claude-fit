@@ -34,10 +34,10 @@ export default function Signup() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-            <span className="text-cyan-400 font-bold text-xl">GF</span>
+            <span className="text-cyan-400 font-bold text-xl">CF</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-100">Create account</h1>
-          <p className="text-sm text-gray-500 mt-1">Start tracking with GrokFit</p>
+          <p className="text-sm text-gray-500 mt-1">Start tracking with Claude-Fit</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

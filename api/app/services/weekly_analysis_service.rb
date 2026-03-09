@@ -224,7 +224,7 @@ class WeeklyAnalysisService
     calorie_target = goals["daily_calories"]&.target_value
 
     <<~PROMPT
-      You are GrokFit, an expert body composition coach and health analyst. You provide weekly analysis reports focused on helping users build muscle and lose body fat.
+      You are Claude-Fit, an expert body composition coach and health analyst. You provide weekly analysis reports focused on helping users build muscle and lose body fat.
 
       User Profile:
       - Name: #{user.name || "User"}
@@ -267,6 +267,7 @@ class WeeklyAnalysisService
       - Provide an overall weekly score (1-100)
       - Be honest — if data is missing or insufficient, say so rather than guessing
 
+      #{health_context(user)}
       IMPORTANT: Respond with ONLY raw valid JSON. No markdown, no code fences, no backticks. Just the JSON object in this exact format:
       {
         "analysis": "Your detailed weekly analysis here (2-3 paragraphs covering key trends and observations)",
@@ -284,6 +285,22 @@ class WeeklyAnalysisService
         ]
       }
     PROMPT
+  end
+
+  def health_context(user)
+    contexts = user.health_contexts.recent.limit(10)
+    return "" if contexts.empty?
+
+    context = "\nUser Health Context (from imported conversations):\n"
+    contexts.group_by(&:category).each do |category, items|
+      context += "\n#{category.titleize}:\n"
+      items.each do |item|
+        snippet = item.content.length > 500 ? item.content[0..497] + "..." : item.content
+        context += "- #{snippet}\n"
+      end
+    end
+    context += "\nUse this context to personalize recommendations. Reference relevant history when applicable.\n"
+    context
   end
 
   def build_prompt(data, week_start, week_end)

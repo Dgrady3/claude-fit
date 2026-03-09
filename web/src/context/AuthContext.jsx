@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
 
   const enterDemoMode = useCallback(async () => {
     setDemoMode(true);
-    setUser({ id: 0, name: 'Demo User', email: 'demo@grokfit.dev' });
+    setUser({ id: 0, name: 'Demo User', email: 'demo@claude-fit.dev' });
     setLoading(false);
   }, []);
 

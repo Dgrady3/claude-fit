@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="64" fill="#0a0a0f"/>
-  <rect x="32" y="32" width="448" height="448" rx="48" fill="#0a0a0f" stroke="#22d3ee" stroke-width="4" stroke-opacity="0.3"/>
-  <text x="256" y="280" font-family="system-ui, sans-serif" font-size="180" font-weight="bold" fill="#22d3ee" text-anchor="middle">GF</text>
+  <rect width="512" height="512" rx="96" fill="#08080c"/>
+  <rect x="24" y="24" width="464" height="464" rx="80" fill="#08080c" stroke="#06b6d4" stroke-width="4" stroke-opacity="0.25"/>
+  <!-- C -->
+  <path d="M148 310c0 44 32 72 72 72 28 0 50-14 60-36l-28-16c-6 14-18 22-32 22-26 0-42-20-42-42s16-42 42-42c14 0 26 8 32 22l28-16c-10-22-32-36-60-36-40 0-72 28-72 72z" fill="#06b6d4"/>
+  <!-- F -->
+  <path d="M280 238h96v30h-64v28h56v28h-56v58h-32z" fill="#06b6d4"/>
 </svg>
