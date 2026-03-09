@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude-Fit — AI-Powered Fitness Intelligence</title>
+<meta name="description" content="Claude-Fit uses AI to help you build lean muscle and lose fat by cross-referencing training, sleep, and nutrition. Root cause analysis, body comp simulator, 12 analytics charts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=General+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face {
+  font-family: 'General Sans';
+  src: url('https://fonts.googleapis.com/css2?family=General+Sans:wght@400;500;600;700&display=swap');
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #08080c;
+  --surface: #0e0e14;
+  --surface-2: #14141c;
+  --cyan: #06b6d4;
+  --emerald: #10b981;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --purple: #a78bfa;
+  --text-1: #f0f0f2;
+  --text-2: rgba(240,240,242,0.55);
+  --text-3: rgba(240,240,242,0.3);
+  --border: rgba(240,240,242,0.06);
+  --border-2: rgba(240,240,242,0.1);
+  --font-display: 'General Sans', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Grain ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════ NAV ═══════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  transition: all 0.5s var(--ease);
+}
+.nav.scrolled {
+  background: rgba(8,8,12,0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.nav-mark {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--cyan);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--bg);
+  letter-spacing: -0.02em;
+}
+.nav-wordmark {
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--text-1);
+  letter-spacing: -0.03em;
+}
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ═══════════ BUTTONS ═══════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--text-2);
+}
+.btn--ghost:hover {
+  color: var(--text-1);
+  background: rgba(255,255,255,0.04);
+}
+.btn--primary {
+  background: var(--text-1);
+  color: var(--bg);
+  font-weight: 600;
+}
+.btn--primary:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(240,240,242,0.15);
+}
+.btn--large {
+  padding: 13px 28px;
+  font-size: 15px;
+  border-radius: 10px;
+}
+.btn--cyan {
+  background: var(--cyan);
+  color: var(--bg);
+  font-weight: 600;
+}
+.btn--cyan:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(6,182,212,0.25);
+}
+
+/* ═══════════ HERO ═══════════ */
+.hero {
+  padding: 140px 0 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* Ambient glow */
+.hero-glow {
+  position: absolute;
+  width: 900px;
+  height: 500px;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(6,182,212,0.06), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-top {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 72px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Badge */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border-2);
+  background: rgba(255,255,255,0.02);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px rgba(6,182,212,0.6);
+  animation: dotPulse 2.5s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero-title {
+  font-weight: 700;
+  font-size: clamp(38px, 5vw, 60px);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  margin-bottom: 20px;
+  color: var(--text-1);
+}
+.hero-title-fade {
+  display: block;
+  background: linear-gradient(to bottom, var(--text-1) 30%, rgba(240,240,242,0.4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-2);
+  max-width: 480px;
+  margin: 0 auto 32px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+.hero-ctas {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ═══════════ BENTO HERO GRID ═══════════ */
+.bento-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 0.8fr;
+  grid-template-rows: 200px 180px;
+  gap: 8px;
+  padding: 0 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.bento-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.bento-card:hover {
+  border-color: var(--border-2);
+  background: var(--surface-2);
+}
+
+.bento-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  margin-bottom: 14px;
+}
+
+/* Card 1: Recovery Score Ring */
+.card-recovery {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+}
+.recovery-ring-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.recovery-ring {
+  width: 140px;
+  height: 140px;
+  position: relative;
+}
+.recovery-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.recovery-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+.ring-bg { stroke: rgba(255,255,255,0.04); }
+.ring-value {
+  stroke: var(--emerald);
+  stroke-linecap: round;
+  stroke-dasharray: 408;
+  stroke-dashoffset: 408;
+  filter: drop-shadow(0 0 8px rgba(16,185,129,0.3));
+  transition: stroke-dashoffset 1.5s var(--ease);
+}
+.recovery-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.recovery-number .big {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 42px;
+  letter-spacing: -0.04em;
+  color: var(--emerald);
+  line-height: 1;
+}
+.recovery-number .unit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+.recovery-status {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--emerald);
+}
+
+/* Card 2: Weekly Strain */
+.card-strain {
+  grid-column: 2;
+  grid-row: 1;
+}
+.strain-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 110px;
+  margin-top: 8px;
+}
+.strain-bar {
+  flex: 1;
+  border-radius: 4px 4px 2px 2px;
+  position: relative;
+  min-height: 8px;
+  transition: height 1s var(--ease);
+}
+.strain-bar::after {
+  content: attr(data-day);
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
+.strain-bar.today {
+  border: 1px solid rgba(6,182,212,0.3);
+  box-shadow: 0 0 12px rgba(6,182,212,0.15);
+}
+
+/* Card 3: AI Insight */
+.card-insight {
+  grid-column: 2;
+  grid-row: 2;
+}
+.insight-content {
+  margin-top: 6px;
+}
+.insight-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(6,182,212,0.1);
+  margin-bottom: 12px;
+}
+.insight-icon svg {
+  width: 14px; height: 14px;
+  stroke: var(--cyan);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.insight-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.insight-text .highlight {
+  color: var(--cyan);
+}
+.insight-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 15px;
+  background: var(--cyan);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Card 4: Sleep Stages */
+.card-sleep {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+}
+.sleep-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.sleep-score {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 24px;
+  color: var(--purple);
+  letter-spacing: -0.03em;
+}
+.sleep-chart-wrap {
+  flex: 1;
+  position: relative;
+  margin-top: 8px;
+}
+.sleep-chart-wrap svg {
+  width: 100%;
+  height: 100%;
+}
+.sleep-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+.sleep-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+}
+.sleep-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Card 5: HRV + Resting HR */
+.card-hrv {
+  grid-column: 4;
+  grid-row: 1;
+}
+.hrv-metrics {
+  margin-top: 12px;
+}
+.hrv-metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hrv-metric:last-child { border: none; }
+.hrv-metric-name {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.hrv-metric-val {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+.hrv-metric-unit {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-left: 2px;
+}
+.hrv-delta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 2px;
+}
+.hrv-delta.up { color: var(--emerald); }
+.hrv-delta.down { color: var(--red); }
+
+/* Card 6: Macros */
+.card-macros {
+  grid-column: 4;
+  grid-row: 2;
+}
+.macro-bars {
+  margin-top: 12px;
+}
+.macro-row {
+  margin-bottom: 12px;
+}
+.macro-row:last-child { margin-bottom: 0; }
+.macro-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.macro-name {
+  font-size: 12px;
+  color: var(--text-2);
+}
+.macro-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.macro-track {
+  height: 6px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.macro-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1.2s var(--ease);
+}
+
+/* ═══════════ FEATURES SECTION ═══════════ */
+.features-section {
+  padding: 140px 0 120px;
+}
+.features-header {
+  max-width: 560px;
+  margin-bottom: 64px;
+}
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--cyan);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-weight: 700;
+  font-size: clamp(28px, 3.5vw, 44px);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  color: var(--text-1);
+}
+.section-desc {
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 440px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.feature-cell {
+  background: var(--surface);
+  padding: 36px 32px;
+  transition: background 0.3s ease;
+}
+.feature-cell:hover {
+  background: var(--surface-2);
+}
+.feature-icon {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 18px;
+}
+.feature-icon svg {
+  width: 18px; height: 18px;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+.feature-cell h3 {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: var(--text-1);
+}
+.feature-cell p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+/* ═══════════ HOW IT WORKS ═══════════ */
+.how-section {
+  padding: 120px 0;
+  border-top: 1px solid var(--border);
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  margin-top: 72px;
+  position: relative;
+}
+.how-grid::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: calc(16.66%);
+  right: calc(16.66%);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-2) 20%, var(--border-2) 80%, transparent);
+}
+.how-step {
+  text-align: center;
+}
+.how-num {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  background: var(--surface);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--cyan);
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+.how-step h3 {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  color: var(--text-1);
+}
+.how-step p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-3);
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+/* ═══════════ STATS BAR ═══════════ */
+.stats-bar {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 56px 0;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: clamp(28px, 3.5vw, 40px);
+  letter-spacing: -0.04em;
+  color: var(--cyan);
+  margin-bottom: 4px;
+}
+.stat-desc {
+  font-size: 13px;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+/* ═══════════ CTA ═══════════ */
+.cta-section {
+  padding: 160px 0;
+  text-align: center;
+  position: relative;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 300px;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, rgba(6,182,212,0.04), transparent 70%);
+  pointer-events: none;
+}
+.cta-title {
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 52px);
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  color: var(--text-1);
+}
+.cta-sub {
+  color: var(--text-2);
+  font-size: 16px;
+  margin-bottom: 36px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ═══════════ FOOTER ═══════════ */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+}
+.footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.footer-mark {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: var(--cyan);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 8px;
+  color: var(--bg);
+}
+.footer-name {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.footer-meta {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero entrance */
+.hero-top { opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s var(--ease) 0.1s forwards; }
+.bento-hero { opacity: 0; transform: translateY(30px); animation: fadeUp 0.9s var(--ease) 0.35s forwards; }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal, .hero-top, .bento-hero { opacity: 1; transform: none; animation: none; }
+}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media (max-width: 1024px) {
+  .bento-hero {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .card-recovery { grid-column: 1; grid-row: 1; }
+  .card-strain { grid-column: 2; grid-row: 1; }
+  .card-insight { grid-column: 1; grid-row: 2; }
+  .card-sleep { grid-column: 2; grid-row: 2 / 4; }
+  .card-hrv { grid-column: 1; grid-row: 3; }
+  .card-macros { display: none; }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .nav-actions .btn--ghost { display: none; }
+  .bento-hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .card-recovery, .card-strain, .card-insight, .card-sleep, .card-hrv {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .features-grid { grid-template-columns: 1fr; }
+  .how-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .how-grid::before { display: none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .hero { padding-top: 110px; }
+  .hero-top { margin-bottom: 48px; }
+  .footer .container { flex-direction: column; gap: 12px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ NAV ═══════ -->
+<nav class="nav" id="nav">
+  <div class="container">
+    <a href="/landing" class="nav-logo">
+      <div class="nav-mark">CF</div>
+      <span class="nav-wordmark">Claude-Fit</span>
+    </a>
+    <div class="nav-actions">
+      <a href="/login" class="btn btn--ghost">Sign In</a>
+      <a href="/demo" class="btn btn--primary">Try Demo</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <div class="hero-top">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      AI-Powered Fitness Intelligence
+    </div>
+    <h1 class="hero-title">
+      Your data tells a story.<br>
+      <span class="hero-title-fade">Claude-Fit reads it.</span>
+    </h1>
+    <p class="hero-sub">
+      AI that cross-references your training, sleep, and nutrition to help you build lean muscle and cut fat — faster.
+    </p>
+    <div class="hero-ctas">
+      <a href="/demo" class="btn btn--cyan btn--large">Try the Demo</a>
+      <a href="/login" class="btn btn--ghost btn--large">Get Started</a>
+    </div>
+  </div>
+
+  <!-- ═══════ BENTO GRID ═══════ -->
+  <div class="bento-hero" id="bentoGrid">
+
+    <!-- 1: Recovery Score Ring -->
+    <div class="bento-card card-recovery">
+      <div class="bento-label">Recovery Score</div>
+      <div class="recovery-ring-wrap">
+        <div class="recovery-ring">
+          <svg viewBox="0 0 140 140">
+            <circle class="ring-bg" cx="70" cy="70" r="65" />
+            <circle class="ring-value" id="recoveryRing" cx="70" cy="70" r="65" />
+          </svg>
+          <div class="recovery-number">
+            <span class="big" id="recoveryNum">0</span>
+            <span class="unit">/ 100</span>
+          </div>
+        </div>
+      </div>
+      <div class="recovery-status">Ready to train</div>
+    </div>
+
+    <!-- 2: Weekly Strain -->
+    <div class="bento-card card-strain">
+      <div class="bento-label">Weekly Strain</div>
+      <div class="strain-bars" id="strainBars"></div>
+    </div>
+
+    <!-- 3: AI Insight -->
+    <div class="bento-card card-insight">
+      <div class="bento-label">AI Insight</div>
+      <div class="insight-content">
+        <div class="insight-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93"/><circle cx="12" cy="10" r="1"/><path d="M12 14v3"/><path d="M9 21h6"/><path d="M8.56 13.44A7 7 0 0 0 5 19h14a7 7 0 0 0-3.56-5.56"/></svg>
+        </div>
+        <div class="insight-text" id="insightText"></div>
+      </div>
+    </div>
+
+    <!-- 4: Sleep Stages -->
+    <div class="bento-card card-sleep">
+      <div class="sleep-header">
+        <div class="bento-label" style="margin:0">Sleep Quality</div>
+        <div class="sleep-score">91</div>
+      </div>
+      <div class="sleep-chart-wrap" id="sleepChart"></div>
+      <div class="sleep-legend">
+        <div class="sleep-legend-item"><span class="sleep-legend-dot" style="background:#818cf8"></span>Deep</div>
+        <div class="sleep-legend-item"><span class="sleep-legend-dot" style="background:#a78bfa"></span>REM</div>
+        <div class="sleep-legend-item"><span class="sleep-legend-dot" style="background:rgba(167,139,250,0.3)"></span>Light</div>
+      </div>
+    </div>
+
+    <!-- 5: HRV + Resting HR -->
+    <div class="bento-card card-hrv">
+      <div class="bento-label">Vitals</div>
+      <div class="hrv-metrics">
+        <div class="hrv-metric">
+          <div>
+            <div class="hrv-metric-name">HRV</div>
+            <div class="hrv-delta up">+8% vs 30d avg</div>
+          </div>
+          <div class="hrv-metric-val">62<span class="hrv-metric-unit">ms</span></div>
+        </div>
+        <div class="hrv-metric">
+          <div>
+            <div class="hrv-metric-name">Resting HR</div>
+            <div class="hrv-delta down">-2 bpm this week</div>
+          </div>
+          <div class="hrv-metric-val">54<span class="hrv-metric-unit">bpm</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6: Macros -->
+    <div class="bento-card card-macros">
+      <div class="bento-label">Today's Macros</div>
+      <div class="macro-bars">
+        <div class="macro-row">
+          <div class="macro-header">
+            <span class="macro-name">Protein</span>
+            <span class="macro-val">168 / 185g</span>
+          </div>
+          <div class="macro-track">
+            <div class="macro-fill" id="macroP" style="width:0; background: var(--cyan);"></div>
+          </div>
+        </div>
+        <div class="macro-row">
+          <div class="macro-header">
+            <span class="macro-name">Carbs</span>
+            <span class="macro-val">210 / 280g</span>
+          </div>
+          <div class="macro-track">
+            <div class="macro-fill" id="macroC" style="width:0; background: var(--amber);"></div>
+          </div>
+        </div>
+        <div class="macro-row">
+          <div class="macro-header">
+            <span class="macro-name">Fat</span>
+            <span class="macro-val">72 / 85g</span>
+          </div>
+          <div class="macro-track">
+            <div class="macro-fill" id="macroF" style="width:0; background: var(--emerald);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════ FEATURES ═══════ -->
+<section class="features-section">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="section-tag">Capabilities</div>
+      <h2 class="section-title">Build muscle. Lose fat.<br>Never plateau again.</h2>
+      <p class="section-desc">Six integrated systems that tell you exactly what to eat, how to train, and when to recover — backed by your own data.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-cell">
+        <div class="feature-icon" style="background:rgba(6,182,212,0.08)">
+          <svg viewBox="0 0 24 24" stroke="var(--cyan)"><path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93"/><circle cx="12" cy="10" r="1"/><path d="M12 14v3"/><path d="M9 21h6"/><path d="M8.56 13.44A7 7 0 0 0 5 19h14a7 7 0 0 0-3.56-5.56"/></svg>
+        </div>
+        <h3>AI Root Cause Analysis</h3>
+        <p>Claude finds why your lifts stalled or your cut plateaued — actual reasoning across training, sleep, and diet.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.08)">
+          <svg viewBox="0 0 24 24" stroke="var(--emerald)"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>Oura Ring Integration</h3>
+        <p>Sleep stages, HRV, readiness, and activity pull in automatically. Your ring logs recovery while you sleep.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon" style="background:rgba(167,139,250,0.08)">
+          <svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-6"/></svg>
+        </div>
+        <h3>12 Analytics Charts</h3>
+        <p>Lift progression, sleep architecture, macro adherence, volume load — every metric that matters for body recomposition.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.08)">
+          <svg viewBox="0 0 24 24" stroke="var(--amber)"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 12l3-3 2 2 5-5"/></svg>
+        </div>
+        <h3>Body Comp Simulator</h3>
+        <p>Drag sliders to see how deficit, protein, and training frequency shift your lean mass vs fat over weeks.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon" style="background:rgba(239,68,68,0.08)">
+          <svg viewBox="0 0 24 24" stroke="var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3>Anomaly Detection</h3>
+        <p>Z-score analysis catches unusual dips in sleep, HRV, or output before they derail your progress.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon" style="background:rgba(240,240,242,0.05)">
+          <svg viewBox="0 0 24 24" stroke="var(--text-2)"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M12 18v-6"/><path d="M8 18v-2"/><path d="M16 18v-4"/></svg>
+        </div>
+        <h3>PWA &amp; Offline</h3>
+        <p>Install on your phone like a native app. Log sets at the gym with zero signal — syncs when you're back.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATS BAR ═══════ -->
+<section class="stats-bar">
+  <div class="container">
+    <div class="stats-grid reveal">
+      <div>
+        <div class="stat-num">12</div>
+        <div class="stat-desc">Purpose-Built Charts</div>
+      </div>
+      <div>
+        <div class="stat-num">90+</div>
+        <div class="stat-desc">Days of Demo Data</div>
+      </div>
+      <div>
+        <div class="stat-num">4</div>
+        <div class="stat-desc">Integrated Data Sources</div>
+      </div>
+      <div>
+        <div class="stat-num">24/7</div>
+        <div class="stat-desc">Offline-First PWA</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ HOW IT WORKS ═══════ -->
+<section class="how-section">
+  <div class="container">
+    <div class="reveal" style="text-align:center">
+      <div class="section-tag">How It Works</div>
+      <h2 class="section-title">Three steps. Zero complexity.</h2>
+    </div>
+    <div class="how-grid reveal">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <h3>Connect your ring</h3>
+        <p>Link Oura in two minutes. Sleep, HRV, and readiness start syncing immediately.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <h3>Train &amp; eat</h3>
+        <p>Log your lifts, track your meals. The app handles progressive overload math and macro totals.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <h3>Get smarter</h3>
+        <p>AI connects the dots — why your squat jumped 10lbs, why your cut stalled, what to change next.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ CTA ═══════ -->
+<section class="cta-section">
+  <div class="container reveal">
+    <h2 class="cta-title">Your next PR starts here.</h2>
+    <p class="cta-sub">See how AI connects your training, sleep, and nutrition into one clear picture.</p>
+    <a href="/demo" class="btn btn--cyan btn--large">Try the Demo</a>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer class="footer">
+  <div class="container">
+    <a href="/landing" class="footer-brand">
+      <div class="footer-mark">CF</div>
+      <span class="footer-name">Claude-Fit</span>
+    </a>
+    <div class="footer-meta">Built with Claude AI &middot; &copy; 2026</div>
+  </div>
+</footer>
+
+<script>
+// ── Nav scroll ──
+(function() {
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function() {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+})();
+
+// ── Reveal on scroll ──
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.reveal').forEach(function(el) { el.classList.add('visible'); });
+    return;
+  }
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(function(el) { obs.observe(el); });
+})();
+
+// ── Recovery Ring Animation ──
+(function() {
+  var score = 87;
+  var circumference = 2 * Math.PI * 65; // ~408
+  var offset = circumference - (score / 100) * circumference;
+  var ring = document.getElementById('recoveryRing');
+  var num = document.getElementById('recoveryNum');
+
+  setTimeout(function() {
+    ring.style.strokeDashoffset = offset;
+    // Animate number
+    var start = 0;
+    var duration = 1200;
+    var startTime = null;
+    function tick(ts) {
+      if (!startTime) startTime = ts;
+      var progress = Math.min((ts - startTime) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      num.textContent = Math.round(eased * score);
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }, 600);
+})();
+
+// ── Strain Bars ──
+(function() {
+  var container = document.getElementById('strainBars');
+  var days = ['M','T','W','T','F','S','S'];
+  var values = [72, 85, 60, 90, 78, 45, 30];
+  var colors = [
+    'var(--cyan)', 'var(--cyan)', 'rgba(6,182,212,0.5)',
+    'var(--cyan)', 'var(--cyan)', 'rgba(6,182,212,0.3)', 'rgba(6,182,212,0.2)'
+  ];
+  values.forEach(function(v, i) {
+    var bar = document.createElement('div');
+    bar.className = 'strain-bar' + (i === 4 ? ' today' : '');
+    bar.setAttribute('data-day', days[i]);
+    bar.style.height = '0%';
+    bar.style.background = colors[i];
+    container.appendChild(bar);
+    setTimeout(function() {
+      bar.style.height = v + '%';
+    }, 700 + i * 80);
+  });
+})();
+
+// ── AI Insight typewriter ──
+(function() {
+  var el = document.getElementById('insightText');
+  var text = 'HRV dropped <span class="highlight">12% below baseline</span> after back-to-back heavy sessions. Consider a deload — your recovery debt is compounding.';
+  var cursor = '<span class="insight-cursor"></span>';
+  var i = 0;
+  var plain = text.replace(/<[^>]*>/g, '');
+  var delay = 800;
+
+  function getHtmlUpTo(charIndex) {
+    var result = '';
+    var plainIndex = 0;
+    var inTag = false;
+    for (var j = 0; j < text.length && plainIndex <= charIndex; j++) {
+      if (text[j] === '<') { inTag = true; result += text[j]; continue; }
+      if (text[j] === '>') { inTag = false; result += text[j]; continue; }
+      if (inTag) { result += text[j]; continue; }
+      if (plainIndex < charIndex) { result += text[j]; }
+      plainIndex++;
+    }
+    return result;
+  }
+
+  setTimeout(function type() {
+    if (i <= plain.length) {
+      el.innerHTML = getHtmlUpTo(i) + cursor;
+      i++;
+      setTimeout(type, 22 + Math.random() * 18);
+    } else {
+      el.innerHTML = text + cursor;
+    }
+  }, delay);
+})();
+
+// ── Sleep Chart SVG ──
+(function() {
+  var wrap = document.getElementById('sleepChart');
+  var w = 320, h = 200;
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+  svg.style.width = '100%';
+  svg.style.height = '100%';
+
+  // Generate sleep stage data (8 hours, 30min intervals = 16 points)
+  var deep =  [20, 55, 70, 60, 30, 15, 10, 5,  8, 40, 55, 45, 20, 10, 5, 3];
+  var rem =   [5,  10, 15, 25, 45, 55, 50, 40, 35, 20, 15, 25, 40, 50, 45, 35];
+  var light = [75, 35, 15, 15, 25, 30, 40, 55, 57, 40, 30, 30, 40, 40, 50, 62];
+
+  function makePath(data, yOffset, color, opacity) {
+    var step = w / (data.length - 1);
+    var scale = h * 0.28;
+    var points = data.map(function(v, i) {
+      return (i * step) + ',' + (yOffset - (v / 100) * scale);
+    });
+    // Create smooth area
+    var pathD = 'M0,' + yOffset;
+    data.forEach(function(v, i) {
+      var x = i * step;
+      var y = yOffset - (v / 100) * scale;
+      if (i === 0) { pathD += ' L' + x + ',' + y; }
+      else {
+        var px = (i - 1) * step;
+        var py = yOffset - (data[i-1] / 100) * scale;
+        var cx1 = px + step * 0.4;
+        var cx2 = x - step * 0.4;
+        pathD += ' C' + cx1 + ',' + py + ' ' + cx2 + ',' + y + ' ' + x + ',' + y;
+      }
+    });
+    pathD += ' L' + w + ',' + yOffset + ' Z';
+
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    path.setAttribute('fill', color);
+    path.setAttribute('opacity', opacity);
+    return path;
+  }
+
+  svg.appendChild(makePath(light, h * 0.85, '#a78bfa', '0.12'));
+  svg.appendChild(makePath(rem, h * 0.85, '#a78bfa', '0.3'));
+  svg.appendChild(makePath(deep, h * 0.85, '#818cf8', '0.5'));
+
+  // Time labels
+  var times = ['11pm', '1am', '3am', '5am', '7am'];
+  times.forEach(function(t, i) {
+    var txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', i * (w / 4));
+    txt.setAttribute('y', h - 4);
+    txt.setAttribute('fill', 'rgba(240,240,242,0.2)');
+    txt.setAttribute('font-size', '10');
+    txt.setAttribute('font-family', 'IBM Plex Mono, monospace');
+    txt.textContent = t;
+    svg.appendChild(txt);
+  });
+
+  wrap.appendChild(svg);
+})();
+
+// ── Macro bar fills ──
+(function() {
+  setTimeout(function() {
+    document.getElementById('macroP').style.width = '91%';
+    document.getElementById('macroC').style.width = '75%';
+    document.getElementById('macroF').style.width = '85%';
+  }, 800);
+})();
+</script>
+</body>
+</html>

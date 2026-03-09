@@ -11,6 +11,7 @@ import {
   useExercises,
 } from '../api/hooks';
 import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
 import toast from 'react-hot-toast';
 
@@ -418,6 +419,7 @@ function ExerciseCard({
   onSwapExercise,
   onRemoveExercise,
   refetch,
+  demoMode,
 }) {
   const exercise = programExercise.exercise || programExercise;
   const exerciseId = programExercise.exercise_id || exercise?.id;
@@ -558,10 +560,12 @@ function ExerciseCard({
             </span>
           )}
         </div>
-        <ExerciseMenu
-          onSwap={() => onSwapExercise(programExercise)}
-          onRemove={() => onRemoveExercise(programExercise)}
-        />
+        {!demoMode && (
+          <ExerciseMenu
+            onSwap={() => onSwapExercise(programExercise)}
+            onRemove={() => onRemoveExercise(programExercise)}
+          />
+        )}
       </div>
 
       {/* Manual rest timer trigger */}
@@ -621,13 +625,15 @@ function ExerciseCard({
       </div>
 
       {/* Add set */}
-      <button
-        onClick={handleAddSet}
-        className="w-full py-2 text-sm font-medium text-cyan-400 hover:text-cyan-300
-                   active:bg-cyan-500/5 rounded-lg transition-colors min-h-[44px]"
-      >
-        + Add Set
-      </button>
+      {!demoMode && (
+        <button
+          onClick={handleAddSet}
+          className="w-full py-2 text-sm font-medium text-cyan-400 hover:text-cyan-300
+                     active:bg-cyan-500/5 rounded-lg transition-colors min-h-[44px]"
+        >
+          + Add Set
+        </button>
+      )}
 
       {/* Completion indicator */}
       {allDone && (
@@ -805,6 +811,7 @@ function WorkoutSummary({ session, exercises, allSets, elapsed, onSave, isSaving
 // ─── Main Component ────────────────────────────────────────
 
 export default function WorkoutLogger() {
+  const { demoMode } = useAuth();
   const { programId } = useParams(); // actually the session ID
   const navigate = useNavigate();
   const { data, isLoading, refetch } = useWorkoutSession(programId);
@@ -816,11 +823,16 @@ export default function WorkoutLogger() {
   const [restTimer, setRestTimer] = useState(null); // { exerciseName, seconds }
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [swapTarget, setSwapTarget] = useState(null);
+  const [removedExerciseIds, setRemovedExerciseIds] = useState(new Set());
 
   const session = data?.workout_session || data;
   const programId_num = session?.workout_program?.id;
   const updateProgramExercise = useUpdateProgramExercise(programId_num);
-  const exercises = session?.program_exercises || session?.exercises || [];
+  const allExercises = session?.program_exercises || session?.exercises || [];
+  const exercises = allExercises.filter((pe) => {
+    const exId = pe.exercise_id || pe.exercise?.id || pe.id;
+    return !removedExerciseIds.has(exId);
+  });
   const allSets = session?.workout_sets || session?.sets || [];
 
   // Count completed exercises for progress indicator
@@ -888,23 +900,41 @@ export default function WorkoutLogger() {
     setSwapTarget(null);
   }, [swapTarget, programId_num, updateProgramExercise, refetch]);
 
-  const handleRemoveExercise = useCallback((programExercise) => {
+  const handleRemoveExercise = useCallback(async (programExercise) => {
     const exercise = programExercise.exercise || programExercise;
     if (!window.confirm(`Remove ${exercise?.name} from this workout?`)) return;
 
     const exerciseId = programExercise.exercise_id || exercise?.id;
-    const setsToDelete = allSets.filter((s) => s.exercise_id === exerciseId);
-    Promise.all(
-      setsToDelete.map((s) =>
-        api.delete(`/workout_sessions/${programId}/session_sets/${s.id}`)
-      )
-    ).then(() => {
-      refetch();
+
+    // Immediately hide from UI
+    setRemovedExerciseIds((prev) => new Set([...prev, exerciseId]));
+
+    try {
+      // Delete any logged sets for this exercise in this session
+      const setsToDelete = allSets.filter((s) => s.exercise_id === exerciseId);
+      await Promise.all(
+        setsToDelete.map((s) =>
+          api.delete(`/workout_sessions/${programId}/session_sets/${s.id}`)
+        )
+      );
+
+      // Also remove from the program so it persists
+      if (programId_num && programExercise.id) {
+        await api.delete(`/workout_programs/${programId_num}/program_exercises/${programExercise.id}`);
+      }
+
+      await refetch();
       toast.success(`Removed ${exercise?.name}`);
-    }).catch(() => {
+    } catch {
+      // Revert UI if something fails
+      setRemovedExerciseIds((prev) => {
+        const next = new Set([...prev]);
+        next.delete(exerciseId);
+        return next;
+      });
       toast.error('Failed to remove exercise');
-    });
-  }, [allSets, programId, refetch]);
+    }
+  }, [allSets, programId, programId_num, refetch]);
 
   // ─── Loading state ───────────────────────────────────────
 
@@ -946,22 +976,24 @@ export default function WorkoutLogger() {
           <span className="text-lg font-mono font-bold text-cyan-400 tabular-nums">
             {formatElapsed(elapsed)}
           </span>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={handleFinish}
-            disabled={completeWorkout.isPending}
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-dark-900 font-bold text-sm
-                       rounded-lg min-h-[40px] transition-colors disabled:opacity-50
-                       flex items-center gap-1.5"
-          >
-            {completeWorkout.isPending ? (
-              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : null}
-            Finish
-          </motion.button>
+          {!demoMode && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={handleFinish}
+              disabled={completeWorkout.isPending}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-dark-900 font-bold text-sm
+                         rounded-lg min-h-[40px] transition-colors disabled:opacity-50
+                         flex items-center gap-1.5"
+            >
+              {completeWorkout.isPending ? (
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : null}
+              Finish
+            </motion.button>
+          )}
         </div>
 
         {/* Progress indicator */}
@@ -1046,6 +1078,7 @@ export default function WorkoutLogger() {
             onSwapExercise={handleSwapExercise}
             onRemoveExercise={handleRemoveExercise}
             refetch={refetch}
+            demoMode={demoMode}
           />
         ))}
       </div>

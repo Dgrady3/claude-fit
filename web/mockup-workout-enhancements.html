@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GrokFit - Workout Logger Enhancements Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --dark-900: #0a0a0f;
+    --dark-800: #12121a;
+    --dark-700: #1a1a25;
+    --dark-600: #242430;
+    --dark-500: #2e2e3a;
+    --cyan-400: #22d3ee;
+    --cyan-500: #06b6d4;
+    --emerald-400: #34d399;
+    --amber-400: #fbbf24;
+    --red-400: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--dark-900);
+    color: #e5e7eb;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .phone-frame {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100vh;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* ─── Sticky Header ─── */
+  .sticky-header {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(10,10,15,0.95); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(36,36,48,0.5);
+    padding: 0 16px;
+  }
+  .header-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+  .header-title { font-size: 16px; font-weight: 700; color: #f3f4f6; }
+  .elapsed { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--cyan-400); font-variant-numeric: tabular-nums; }
+  .finish-btn { padding: 8px 16px; background: var(--cyan-500); color: var(--dark-900); font-weight: 700; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; min-height: 40px; }
+  .progress-bar-container { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; }
+  .progress-track { flex: 1; height: 4px; background: var(--dark-700); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--cyan-400); border-radius: 99px; width: 33%; }
+  .progress-label { font-size: 11px; color: #6b7280; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+
+  /* ─── Rest Timer Banner ─── */
+  .rest-timer-banner { position: sticky; top: 77px; z-index: 30; background: var(--dark-700); border-bottom: 1px solid rgba(36,36,48,0.5); overflow: hidden; }
+  .rest-timer-bg { position: absolute; inset: 0; background: rgba(6,182,212,0.08); width: 65%; }
+  .rest-timer-content { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+  .rest-timer-left { display: flex; align-items: center; gap: 12px; }
+  .rest-timer-countdown { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--cyan-400); font-variant-numeric: tabular-nums; }
+  .rest-timer-exercise { font-size: 14px; color: #9ca3af; }
+  .rest-timer-actions { display: flex; gap: 8px; }
+  .rest-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; border-radius: 8px; border: none; cursor: pointer; min-height: 36px; }
+  .rest-btn-add { background: var(--dark-600); color: #d1d5db; }
+  .rest-btn-skip { background: rgba(6,182,212,0.1); color: var(--cyan-400); border: 1px solid rgba(6,182,212,0.2); }
+
+  /* ─── Program Title + Notes ─── */
+  .program-header { padding: 20px 16px 16px; }
+  .program-name { font-size: 22px; font-weight: 800; color: #f9fafb; line-height: 1.2; margin-bottom: 10px; }
+  .program-notes { font-size: 14px; line-height: 1.6; color: #9ca3af; position: relative; }
+  .program-notes.collapsed { max-height: 4.8em; overflow: hidden; }
+  .program-notes.collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2em; background: linear-gradient(transparent, var(--dark-900)); }
+  .see-more-btn { background: none; border: none; color: var(--cyan-400); font-size: 14px; font-weight: 500; cursor: pointer; padding: 6px 0; margin-top: 4px; }
+
+  /* ─── Content ─── */
+  .content { padding: 0 16px 120px; }
+
+  /* ─── Exercise Card ─── */
+  .exercise-card { background: var(--dark-800); border: 1px solid rgba(36,36,48,0.4); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .exercise-card.all-done { border-color: rgba(52,211,153,0.2); }
+
+  .exercise-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; position: relative; }
+  .exercise-header-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .exercise-name { font-size: 16px; font-weight: 700; color: #f3f4f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .muscle-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+  .muscle-badge.back { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .muscle-badge.shoulders { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+
+  /* Three-dot menu */
+  .menu-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; color: #6b7280; cursor: pointer; border-radius: 8px; flex-shrink: 0; }
+  .menu-btn:hover { background: var(--dark-700); color: #9ca3af; }
+
+  .dropdown-menu { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--dark-700); border: 1px solid var(--dark-500); border-radius: 12px; padding: 4px; min-width: 180px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); z-index: 50; display: none; }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: none; background: none; color: #d1d5db; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 8px; text-align: left; }
+  .dropdown-item:hover { background: var(--dark-600); }
+  .dropdown-item.destructive { color: var(--red-400); }
+  .dropdown-item .icon { width: 18px; height: 18px; opacity: 0.7; }
+
+  /* Rest timer trigger row */
+  .rest-trigger { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; margin-bottom: 12px; background: rgba(6,182,212,0.04); border: 1px solid rgba(6,182,212,0.1); border-radius: 10px; cursor: pointer; }
+  .rest-trigger:hover { background: rgba(6,182,212,0.08); border-color: rgba(6,182,212,0.2); }
+  .rest-trigger-left { display: flex; align-items: center; gap: 8px; color: var(--cyan-400); font-size: 13px; font-weight: 500; }
+  .rest-trigger-icon { width: 20px; height: 20px; opacity: 0.8; }
+  .rest-trigger-time { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--cyan-400); background: rgba(6,182,212,0.1); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(6,182,212,0.15); }
+
+  /* ─── Set Table (matching actual app grid) ─── */
+  .set-table-header, .set-row {
+    display: grid;
+    grid-template-columns: 36px 70px 1fr 1fr 44px;
+    gap: 6px;
+    align-items: center;
+    padding: 0 4px;
+  }
+  .set-table-header { padding-bottom: 6px; }
+  .set-table-header span { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; text-align: center; }
+
+  .set-row {
+    padding-top: 4px; padding-bottom: 4px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+    min-height: 48px;
+  }
+  .set-row.completed { background: rgba(34,211,238,0.05); }
+
+  .set-number {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #6b7280; text-align: center;
+    display: flex; align-items: center; justify-content: center; height: 40px;
+  }
+  .set-previous {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4b5563; text-align: center;
+    display: flex; align-items: center; justify-content: center; height: 40px;
+    white-space: nowrap; overflow: hidden;
+  }
+
+  /* Weight input with inline +/- */
+  .weight-cell {
+    display: flex; align-items: center; justify-content: center; gap: 0; height: 40px;
+  }
+  .weight-cell .inc-btn {
+    width: 24px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border: none; background: none; color: #6b7280; font-size: 16px; font-weight: 700; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .weight-cell .inc-btn:active { color: var(--cyan-400); }
+
+  .set-input {
+    width: 100%; max-width: 56px; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700;
+    background: var(--dark-700); border: 1px solid var(--dark-500); border-radius: 6px;
+    padding: 8px 2px; color: #f3f4f6; height: 40px; outline: none;
+    -moz-appearance: textfield;
+  }
+  .set-input::-webkit-inner-spin-button, .set-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .set-input:focus { border-color: rgba(6,182,212,0.5); box-shadow: 0 0 0 1px rgba(6,182,212,0.25); }
+  .set-input.completed { opacity: 0.5; background: var(--dark-800); }
+
+  /* Reps input (no +/- buttons) */
+  .reps-cell {
+    display: flex; align-items: center; justify-content: center; height: 40px;
+  }
+
+  .check-btn {
+    width: 40px; height: 40px; border-radius: 8px;
+    border: 1px solid var(--dark-500); background: var(--dark-700); color: #6b7280;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    justify-self: center;
+  }
+  .check-btn:hover { border-color: rgba(6,182,212,0.3); color: var(--cyan-400); }
+  .check-btn.completed { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.3); color: var(--cyan-400); }
+
+  .add-set-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: 500; color: var(--cyan-400); background: none; border: none; border-radius: 8px; cursor: pointer; min-height: 44px; margin-top: 8px; }
+  .add-set-btn:hover { background: rgba(6,182,212,0.05); }
+
+  .all-done-indicator { display: flex; align-items: center; justify-content: center; gap: 6px; padding-top: 8px; }
+  .all-done-indicator span { font-size: 12px; font-weight: 500; color: var(--emerald-400); }
+
+  /* Annotation badges */
+  .feature-annotation { position: relative; }
+  .annotation-badge { position: absolute; top: -8px; right: -8px; background: var(--amber-400); color: var(--dark-900); font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; z-index: 10; white-space: nowrap; box-shadow: 0 2px 8px rgba(251,191,36,0.3); }
+  .highlight-ring { outline: 2px dashed rgba(251,191,36,0.4); outline-offset: 4px; border-radius: 16px; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+  <!-- Sticky Header -->
+  <div class="sticky-header">
+    <div class="header-row">
+      <span class="header-title">Workout</span>
+      <span class="elapsed">12:34</span>
+      <button class="finish-btn">Finish</button>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-track"><div class="progress-fill" style="width:33%"></div></div>
+      <span class="progress-label">2 of 6</span>
+    </div>
+  </div>
+
+  <!-- Rest Timer Banner -->
+  <div class="rest-timer-banner">
+    <div class="rest-timer-bg"></div>
+    <div class="rest-timer-content">
+      <div class="rest-timer-left">
+        <span class="rest-timer-countdown">1:05</span>
+        <span class="rest-timer-exercise">Chest Supported Row</span>
+      </div>
+      <div class="rest-timer-actions">
+        <button class="rest-btn rest-btn-add">+30s</button>
+        <button class="rest-btn rest-btn-skip">Skip</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW: Program Title + Notes -->
+  <div class="program-header feature-annotation highlight-ring">
+    <div class="annotation-badge">New Feature</div>
+    <h1 class="program-name">Friday - Pull Day</h1>
+    <div class="program-notes collapsed" id="notes">
+      Band pull aparts, assisted pull ups, and the cardio rowing machine all can be your warm up. If you can not feel every muscle in your back stretch and contract - YOU NEED TO FOAM ROLL BEFORE BACK DAY. Foam rolling your back, or getting a deep tissue massage, will help your back BREATHE. You can not pull from a constricted back. The best way to feel a total overall back connection is to understand how to stretch and massage your back.
+    </div>
+    <button class="see-more-btn" onclick="toggleNotes()">See more</button>
+  </div>
+
+  <div class="content">
+
+    <!-- Exercise Card 1: Completed -->
+    <div class="exercise-card all-done">
+      <div class="exercise-header">
+        <div class="exercise-header-left">
+          <span class="exercise-name">Wide Grip Lat Pulldown</span>
+          <span class="muscle-badge back">Back</span>
+        </div>
+        <div class="feature-annotation">
+          <div class="annotation-badge">New</div>
+          <button class="menu-btn" onclick="toggleMenu(this)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>Swap Exercise</button>
+            <button class="dropdown-item destructive"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Remove Exercise</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rest-trigger feature-annotation highlight-ring" style="outline-offset: 2px;">
+        <div class="annotation-badge" style="top:-10px;right:-4px;">New</div>
+        <div class="rest-trigger-left">
+          <svg class="rest-trigger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Rest between each set
+        </div>
+        <div class="rest-trigger-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          90s
+        </div>
+      </div>
+
+      <div class="set-table-header">
+        <span>Set</span><span>Prev</span><span>Lbs</span><span>Reps</span>
+        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>
+      </div>
+
+      <div class="set-row completed">
+        <span class="set-number">1</span>
+        <span class="set-previous">120x10</span>
+        <div class="weight-cell"><input class="set-input completed" value="125" disabled></div>
+        <div class="reps-cell"><input class="set-input completed" value="10" disabled></div>
+        <button class="check-btn completed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+      <div class="set-row completed">
+        <span class="set-number">2</span>
+        <span class="set-previous">120x10</span>
+        <div class="weight-cell"><input class="set-input completed" value="125" disabled></div>
+        <div class="reps-cell"><input class="set-input completed" value="8" disabled></div>
+        <button class="check-btn completed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+      <div class="set-row completed">
+        <span class="set-number">3</span>
+        <span class="set-previous">115x8</span>
+        <div class="weight-cell"><input class="set-input completed" value="120" disabled></div>
+        <div class="reps-cell"><input class="set-input completed" value="8" disabled></div>
+        <button class="check-btn completed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+
+      <button class="add-set-btn">+ Add Set</button>
+      <div class="all-done-indicator">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+        <span>All sets complete</span>
+      </div>
+    </div>
+
+    <!-- Exercise Card 2: In Progress -->
+    <div class="exercise-card">
+      <div class="exercise-header">
+        <div class="exercise-header-left">
+          <span class="exercise-name">Chest Supported Row</span>
+          <span class="muscle-badge back">Back</span>
+        </div>
+        <button class="menu-btn" onclick="toggleMenu(this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        </button>
+        <div class="dropdown-menu">
+          <button class="dropdown-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>Swap Exercise</button>
+          <button class="dropdown-item destructive"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Remove Exercise</button>
+        </div>
+      </div>
+
+      <div class="rest-trigger">
+        <div class="rest-trigger-left">
+          <svg class="rest-trigger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Rest between each set
+        </div>
+        <div class="rest-trigger-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          120s
+        </div>
+      </div>
+
+      <div class="set-table-header">
+        <span>Set</span><span>Prev</span><span>Lbs</span><span>Reps</span>
+        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>
+      </div>
+
+      <div class="set-row completed">
+        <span class="set-number">1</span>
+        <span class="set-previous">70x10</span>
+        <div class="weight-cell"><input class="set-input completed" value="75" disabled></div>
+        <div class="reps-cell"><input class="set-input completed" value="10" disabled></div>
+        <button class="check-btn completed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+      <div class="set-row">
+        <span class="set-number">2</span>
+        <span class="set-previous">70x10</span>
+        <div class="weight-cell">
+          <button class="inc-btn">-</button>
+          <input class="set-input" value="75">
+          <button class="inc-btn">+</button>
+        </div>
+        <div class="reps-cell"><input class="set-input" value="10"></div>
+        <button class="check-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+      <div class="set-row">
+        <span class="set-number">3</span>
+        <span class="set-previous">65x8</span>
+        <div class="weight-cell">
+          <button class="inc-btn">-</button>
+          <input class="set-input" value="">
+          <button class="inc-btn">+</button>
+        </div>
+        <div class="reps-cell"><input class="set-input" value="10"></div>
+        <button class="check-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+
+      <button class="add-set-btn">+ Add Set</button>
+    </div>
+
+    <!-- Exercise Card 3: Not Started -->
+    <div class="exercise-card">
+      <div class="exercise-header">
+        <div class="exercise-header-left">
+          <span class="exercise-name">Face Pull</span>
+          <span class="muscle-badge shoulders">Shoulders</span>
+        </div>
+        <button class="menu-btn" onclick="toggleMenu(this)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+        </button>
+        <div class="dropdown-menu">
+          <button class="dropdown-item"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>Swap Exercise</button>
+          <button class="dropdown-item destructive"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Remove Exercise</button>
+        </div>
+      </div>
+
+      <div class="rest-trigger">
+        <div class="rest-trigger-left">
+          <svg class="rest-trigger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Rest between each set
+        </div>
+        <div class="rest-trigger-time">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          60s
+        </div>
+      </div>
+
+      <div class="set-table-header">
+        <span>Set</span><span>Prev</span><span>Lbs</span><span>Reps</span>
+        <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>
+      </div>
+
+      <div class="set-row">
+        <span class="set-number">1</span>
+        <span class="set-previous">30x15</span>
+        <div class="weight-cell">
+          <button class="inc-btn">-</button>
+          <input class="set-input" value="">
+          <button class="inc-btn">+</button>
+        </div>
+        <div class="reps-cell"><input class="set-input" value="15"></div>
+        <button class="check-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+      <div class="set-row">
+        <span class="set-number">2</span>
+        <span class="set-previous">30x15</span>
+        <div class="weight-cell">
+          <button class="inc-btn">-</button>
+          <input class="set-input" value="">
+          <button class="inc-btn">+</button>
+        </div>
+        <div class="reps-cell"><input class="set-input" value="15"></div>
+        <button class="check-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+      <div class="set-row">
+        <span class="set-number">3</span>
+        <span class="set-previous">25x12</span>
+        <div class="weight-cell">
+          <button class="inc-btn">-</button>
+          <input class="set-input" value="">
+          <button class="inc-btn">+</button>
+        </div>
+        <div class="reps-cell"><input class="set-input" value="15"></div>
+        <button class="check-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></button>
+      </div>
+
+      <button class="add-set-btn">+ Add Set</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function toggleNotes() {
+    const notes = document.getElementById('notes');
+    const btn = notes.nextElementSibling;
+    notes.classList.toggle('collapsed');
+    btn.textContent = notes.classList.contains('collapsed') ? 'See more' : 'See less';
+  }
+  function toggleMenu(btn) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+    const menu = btn.nextElementSibling || btn.parentElement.querySelector('.dropdown-menu');
+    if (menu) menu.classList.toggle('open');
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.menu-btn')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+  });
+</script>
+</body>
+</html>

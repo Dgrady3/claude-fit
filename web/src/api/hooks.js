@@ -96,6 +96,7 @@ export function useUpdateProgramExercise(programId) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['workoutProgram', programId] });
       qc.invalidateQueries({ queryKey: ['workoutSessions'] });
+      qc.invalidateQueries({ queryKey: ['workoutSession'] });
     },
   });
 }
@@ -222,5 +223,14 @@ export function useGenerateReport() {
   return useMutation({
     mutationFn: (date) => api.post('/daily_reports/generate', { date }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['dailyReports'] }),
+  });
+}
+
+// ─── Metrics ────────────────────────────────────────────────
+export function useMetrics(range = '30d') {
+  return useQuery({
+    queryKey: ['metrics', range],
+    queryFn: () => api.get('/metrics', { range }),
+    staleTime: 1000 * 60 * 5,
   });
 }

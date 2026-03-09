@@ -1,0 +1,18 @@
+:concurrency: 5
+:queues:
+  - default
+
+:scheduler:
+  :schedule:
+    nightly_sync:
+      cron: "0 22 * * *"
+      class: NightlySyncJob
+      queue: default
+    weekly_analysis:
+      cron: "0 22 * * 0"
+      class: WeeklyAnalysisJob
+      queue: default
+    anomaly_detection:
+      cron: "0 8 * * *"
+      class: AnomalyDetectionJob
+      queue: default

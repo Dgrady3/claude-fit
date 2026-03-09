@@ -1,0 +1,9 @@
+# Environment files
+api/.env
+web/.env
+
+# Dependencies
+web/node_modules/
+
+# OS
+.DS_Store

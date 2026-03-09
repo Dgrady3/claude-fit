@@ -1,0 +1,3 @@
+api: cd api && bin/rails server -p 3000
+web: cd web && npm run dev
+worker: cd api && bundle exec sidekiq
