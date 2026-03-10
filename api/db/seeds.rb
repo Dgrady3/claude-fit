@@ -529,6 +529,74 @@ anomalies.each do |attrs|
   end
 end
 
+# ── Demo Reports ──────────────────────────────────────────────
+puts "Creating demo reports..."
+
+demo_reports = [
+  {
+    date: Date.current - 1,
+    report_type: "daily",
+    scores: { overall: 82, nutrition: 8, sleep: 9, recovery: 8, training: 7 },
+    analysis_text: "Strong day overall. Your nutrition was dialed in — 182g protein at 185 lbs bodyweight puts you at 0.98g/lb, right in the sweet spot for lean muscle growth. Sleep was excellent: 7h 48m total with 1h 22m deep sleep, which supports muscle protein synthesis overnight.\n\nTraining hit chest and triceps with solid progressive overload — your bench press moved up 5 lbs to 225x6, and incline DB press maintained 80x8. Volume was appropriate at 18 working sets across the session.\n\nThe one gap: your calorie intake (2,180 kcal) is slightly below your 2,400 target. On a training day, you want to be at or slightly above target to fuel recovery and growth. Consider adding a post-workout shake or evening snack to close that 220-calorie gap.\n\nHRV came in at 62ms — above your 7-day average of 55ms — suggesting good recovery from yesterday's rest day. Readiness score of 84 confirms you were primed to train hard today.",
+    recommendations: [
+      "Add 200-250 kcal on training days — a post-workout shake with 40g protein + banana would close the gap perfectly",
+      "Bench press is trending up (215→220→225 over 3 weeks). Next session, attempt 225x7 or 230x5 to keep progressive overload moving",
+      "Sleep consistency is paying off — keep the 10:30pm bedtime. Your deep sleep percentage (29%) is above average"
+    ]
+  },
+  {
+    date: Date.current - 2,
+    report_type: "daily",
+    scores: { overall: 71, nutrition: 6, sleep: 7, recovery: 8, training: 8 },
+    analysis_text: "Mixed day — training was a highlight but nutrition fell short. Your back and biceps session showed genuine strength gains: barbell rows hit 185x8 (up from 175x8 last week), and weighted pull-ups at +25lbs for 3x6 is impressive.\n\nHowever, protein intake dropped to 142g — well below your 180g target and only 0.77g/lb of bodyweight. This is below the 0.8-1.2g/lb range needed for optimal muscle protein synthesis. The culprit appears to be a light lunch (salad, 320 kcal, 18g protein). On heavy pulling days, you need more fuel.\n\nSleep was decent at 7h 12m but deep sleep was only 52 minutes — your lowest this week. This correlates with the later bedtime (11:45pm vs your usual 10:30pm). Even one hour of sleep timing shift can reduce deep sleep by 15-25%.\n\nResting heart rate at 58 bpm and HRV at 51ms are both within normal range, indicating you're recovering adequately despite the nutrition miss.",
+    recommendations: [
+      "Prioritize hitting 180g+ protein — prep a high-protein lunch in advance on training days (grilled chicken + rice = easy 45g protein)",
+      "Get back to the 10:30pm bedtime tonight. The late night directly impacted your deep sleep quality",
+      "Barbell row progression is excellent. Next session aim for 185x9 or 190x6 to maintain the upward trend",
+      "Consider a casein protein shake before bed on training days — slow-digesting protein supports overnight recovery"
+    ]
+  },
+  {
+    date: Date.current - 3,
+    report_type: "daily",
+    scores: { overall: 88, nutrition: 9, sleep: 9, recovery: 9, training: 8 },
+    analysis_text: "Near-perfect rest day execution. This is what active recovery should look like: 9,847 steps (burning an estimated 400+ NEAT calories), nutrition on point at 2,350 kcal with 191g protein, and sleep was your best this week at 8h 15m with 1h 38m deep sleep.\n\nYour body is clearly recovering well — HRV jumped to 68ms (highest in 14 days), resting HR dropped to 54 bpm, and readiness score hit 91. This kind of parasympathetic dominance means your nervous system has fully recovered from the week's training load.\n\nThe high step count on a rest day is doing double duty: it's elevating your TDEE without adding training stress, which accelerates fat loss while maintaining your recovery. At 185 lbs, those ~10K steps burned roughly 450 calories through NEAT alone.\n\nMacro split was excellent: 35% protein, 40% carbs, 25% fat. The higher carb intake on a rest day helps replenish glycogen stores ahead of tomorrow's leg session.",
+    recommendations: [
+      "Tomorrow's leg day: you're fully recovered (HRV 68ms, readiness 91). Push hard — attempt a squat PR or add volume",
+      "Keep this rest day template: 10K steps + high protein + early bedtime. It's clearly working for your recovery",
+      "Your 7-day protein average is now 174g — trending up from 161g two weeks ago. Consistency is building"
+    ]
+  },
+  {
+    date: Date.current,
+    report_type: "weekly",
+    scores: { overall: 79, nutrition: 7, sleep: 8, recovery: 8, training: 8 },
+    analysis_text: "Solid week with clear progressive overload across major lifts. At 185 lbs targeting 175 lbs at ~15% body fat, you're in a body recomposition phase that requires precision — and this week showed you can execute.\n\n**Training:** 4 sessions this week (Push/Pull/Legs/Upper), totaling 68 working sets and 127,450 lbs total volume — up 4.2% from last week's 122,320 lbs. Key progressions: bench 220→225, squat 275→280, barbell row 175→185. Deadlift held steady at 315x5. All major compounds trending up = progressive overload is working.\n\n**Nutrition:** Average daily intake was 2,280 kcal with 174g protein (0.94g/lb). Protein consistency improved — only 1 day below 160g vs 3 days last week. However, calorie intake was ~120 kcal below your 2,400 target on average. At your activity level (~9K daily steps + 4 training sessions), your estimated TDEE is ~2,800. A 2,280 intake creates a ~520 calorie deficit, which is slightly aggressive for recomp. Consider bumping to 2,400-2,500 to slow the cut and preserve muscle.\n\n**Recovery:** Sleep averaged 7h 28m with a 7-day HRV average of 57ms. Both are adequate but not optimal. Your 2 best training days (Tuesday bench PR, Thursday squat PR) followed nights with 7.5+ hours and HRV above 60ms. The correlation is clear: better sleep = better performance.\n\n**Activity:** Averaged 8,940 steps/day with 2 dedicated cardio/walk days. Total weekly NEAT from steps alone is estimated at ~2,800 calories. This is a massive contributor to your deficit — don't underestimate walking.",
+    recommendations: [
+      "Increase daily calories to 2,400-2,500 to slow the deficit from ~520 to ~300-400. This preserves more muscle during the cut while still losing ~0.5 lb/week of fat",
+      "Target 8+ hours sleep on nights before heavy compound days (legs, back). Your PR attempts directly correlate with sleep quality above 7.5 hours",
+      "Deadlift has stalled at 315x5 for 3 weeks. Try a deload to 285x5 next week, then ramp back up with 295→305→315→320 over 4 weeks",
+      "Protein consistency is improving. Lock in the habit: 40g breakfast, 45g lunch, 45g dinner, 40g shake = 170g minimum before any snacks",
+      "Keep the 9K+ daily steps — this is your secret weapon for fat loss without additional training stress"
+    ]
+  }
+]
+
+demo_reports.each do |r|
+  report = demo.daily_reports.find_or_initialize_by(date: r[:date], report_type: r[:report_type])
+  report.update!(
+    analysis_text: r[:analysis_text],
+    scores: r[:scores],
+    recommendations: r[:recommendations],
+    raw_data_snapshot: {},
+    model_used: "claude-sonnet-4-20250514",
+    prompt_tokens: rand(2000..3000),
+    completion_tokens: rand(800..1200)
+  )
+end
+
+puts "  Reports: #{DailyReport.count}"
+
 puts "Seed complete!"
 puts "  Exercises: #{Exercise.count}"
 puts "  Programs: #{WorkoutProgram.count}"
