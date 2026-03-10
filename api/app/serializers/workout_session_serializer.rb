@@ -11,6 +11,10 @@ class WorkoutSessionSerializer
     session.total_volume
   end
 
+  attribute :highlights do |session|
+    session.highlights
+  end
+
   has_many :session_sets, serializer: SessionSetSerializer
   belongs_to :workout_program, serializer: WorkoutProgramSerializer
 end

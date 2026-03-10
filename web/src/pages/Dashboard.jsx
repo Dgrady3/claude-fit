@@ -352,9 +352,18 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500">{timeAgo}</p>
                   </div>
                   <div className="text-right shrink-0 ml-4">
-                    <p className="text-sm font-mono text-gray-300">
-                      {s.total_volume ? `${Number(s.total_volume).toLocaleString()} lbs` : '--'}
-                    </p>
+                    {s.highlights?.length > 0 ? (
+                      <div className="space-y-0.5">
+                        {s.highlights.slice(0, 2).map((h, i) => (
+                          <p key={i} className="text-xs text-gray-400">
+                            <span className="text-gray-300 font-medium">{h.exercise}</span>{' '}
+                            <span className="font-mono text-cyan-400">{h.weight}×{h.reps}</span>
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm font-mono text-gray-500">--</p>
+                    )}
                   </div>
                 </Card>
               );

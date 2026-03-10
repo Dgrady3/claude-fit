@@ -4,7 +4,9 @@ module Api
       before_action :set_session, only: [:show, :update]
 
       def index
-        sessions = current_user.workout_sessions.order(started_at: :desc)
+        sessions = current_user.workout_sessions
+          .includes(session_sets: :exercise)
+          .order(started_at: :desc)
         sessions = sessions.limit(params[:limit] || 20).offset(params[:offset] || 0)
 
         render_json(WorkoutSessionSerializer, sessions)
