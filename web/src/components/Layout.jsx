@@ -266,8 +266,11 @@ export default function Layout() {
       {/* ── Desktop Sidebar (lg+) ─── narrow, icon-only ──────────────── */}
       <aside className="hidden lg:flex flex-col items-center w-16 bg-dark-800 border-r border-dark-600/40 fixed inset-y-0 left-0 z-30 py-4">
         {/* Brand */}
-        <div className="w-9 h-9 rounded-lg bg-cyan-500/20 flex items-center justify-center mb-6">
-          <span className="text-cyan-400 font-bold text-xs">CF</span>
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-6" style={{background: 'linear-gradient(135deg, #06b6d4, #0891b2)', boxShadow: '0 0 12px rgba(6,182,212,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'}}>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
+            <path d="M8.5 2C5.5 2 3 4.5 3 7.5V10.5C3 13.5 5.5 16 8.5 16" stroke="#08080c" strokeWidth="2.5" strokeLinecap="round"/>
+            <path d="M12 2V16M12 2H17M12 9H16" stroke="#08080c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
 
         {/* Primary nav icons */}

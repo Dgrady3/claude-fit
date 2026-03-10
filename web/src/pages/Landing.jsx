@@ -94,9 +94,12 @@ const LANDING_CSS = `
 .landing-page .nav-mark {
   width: 34px; height: 34px;
   border-radius: 9px;
-  background: var(--cyan);
+  background: linear-gradient(135deg, var(--cyan), #0891b2);
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-mono);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(6,182,212,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
   font-weight: 600;
   font-size: 11px;
   color: var(--bg);
@@ -762,9 +765,10 @@ const LANDING_CSS = `
 .landing-page .footer-mark {
   width: 22px; height: 22px;
   border-radius: 5px;
-  background: var(--cyan);
+  background: linear-gradient(135deg, var(--cyan), #0891b2);
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-mono);
+  box-shadow: 0 0 8px rgba(6,182,212,0.2);
   font-weight: 600;
   font-size: 8px;
   color: var(--bg);
@@ -1103,7 +1107,12 @@ export default function Landing() {
       <nav className="nav" ref={navRef}>
         <div className="container">
           <Link to="/landing" className="nav-logo">
-            <div className="nav-mark">CF</div>
+            <div className="nav-mark">
+              <svg width="20" height="18" viewBox="0 0 20 18" fill="none">
+                <path d="M8.5 2C5.5 2 3 4.5 3 7.5V10.5C3 13.5 5.5 16 8.5 16" stroke="#08080c" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M12 2V16M12 2H17M12 9H16" stroke="#08080c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
             <span className="nav-wordmark">Claude-Fit</span>
           </Link>
           <div className="nav-actions">
@@ -1364,7 +1373,12 @@ export default function Landing() {
       <footer className="footer">
         <div className="container">
           <Link to="/landing" className="footer-brand">
-            <div className="footer-mark">CF</div>
+            <div className="footer-mark">
+              <svg width="12" height="11" viewBox="0 0 20 18" fill="none">
+                <path d="M8.5 2C5.5 2 3 4.5 3 7.5V10.5C3 13.5 5.5 16 8.5 16" stroke="#08080c" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M12 2V16M12 2H17M12 9H16" stroke="#08080c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
             <span className="footer-name">Claude-Fit</span>
           </Link>
           <div className="footer-meta">Built with Claude AI &middot; &copy; 2026</div>
