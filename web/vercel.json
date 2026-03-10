@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://api-production-claude-fit.up.railway.app/api/:path*"
+      "destination": "https://api-production-612b.up.railway.app/api/:path*"
     }
   ]
 }
