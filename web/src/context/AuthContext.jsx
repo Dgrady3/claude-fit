@@ -44,6 +44,7 @@ export function AuthProvider({ children }) {
     const newToken = data.token;
     api.setToken(newToken);
     skipFetchRef.current = true;
+    setDemoMode(false);
     setUser(data.user);
     setToken(newToken);
     setLoading(false);
@@ -55,6 +56,7 @@ export function AuthProvider({ children }) {
     const newToken = data.token;
     api.setToken(newToken);
     skipFetchRef.current = true;
+    setDemoMode(false);
     setUser(data.user);
     setToken(newToken);
     setLoading(false);
